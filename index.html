@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fernlight Labs Careers</title>
+<title>Careers</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 :root{
@@ -53,12 +53,19 @@ canvas{width:100%;height:160px;border:1px solid var(--line);border-radius:6px;ba
 .badge img,.badge .ph{width:96px;height:96px;border-radius:8px;object-fit:cover;background:var(--teal-soft);flex:none}
 .badge .bn{font-size:18px}
 .badge .bm{color:var(--muted);font-size:14px}
+.full{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+.full h3{font-family:Georgia,"Iowan Old Style",serif;font-weight:400;font-size:19px;margin:0 0 8px}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:4px 12px;font-size:15px}
+.kv .k{color:var(--muted)}
+.kv .v{word-break:break-word}
+.full img{width:120px;height:120px;border-radius:8px;object-fit:cover;margin-bottom:10px}
+@media(max-width:520px){.kv{grid-template-columns:1fr}.kv .v{margin-bottom:6px}}
 </style>
 </head>
 <body>
 <header>
-  <h1>Fernlight Labs Careers</h1>
-  <p>Systems Support Technician application</p>
+  <h1 id="hCo">Careers</h1>
+  <p id="hRole"></p>
 </header>
 <div class="rail" id="rail">
   <span>Account</span><span>Resume</span><span>Review</span><span>Eligibility</span><span>Sign</span><span>Done</span>
@@ -146,13 +153,25 @@ canvas{width:100%;height:160px;border:1px solid var(--line);border-radius:6px;ba
   <label for="photo">Badge photo, a headshot of your face</label>
   <input id="photo" type="file" accept="image/*">
   <div class="err" id="e5"></div>
-  <div class="badge"><img id="bImg" alt="Badge photo" style="display:none"><div class="ph" id="bPh"></div><div><div class="bn" id="bName"></div><div class="bm">Systems Support Technician</div><div class="bm" id="bId"></div></div></div>
+  <div class="badge"><img id="bImg" alt="Badge photo" style="display:none"><div class="ph" id="bPh"></div><div><div class="bn" id="bName"></div><div class="bm" id="bRole"></div><div class="bm" id="bId"></div></div></div>
+  <div class="full"><h3>Complete profile</h3><div id="fullPhoto"></div><div class="kv" id="fullKv"></div>
+  <button class="ghost" onclick="downloadProfile()">Download profile</button></div>
   <button id="roomBtn" disabled>Interview room opens when scheduled</button>
 </section>
 
 </main>
 <script>
-var state = {step:0, email:"", text:"", sigDrawn:false};
+var CONFIG = {
+  company: "Mojave Technology Group",
+  role: "Systems Support Technician",
+  idPrefix: "MTG"
+};
+document.title = CONFIG.company + " Careers";
+document.getElementById("hCo").textContent = CONFIG.company + " Careers";
+document.getElementById("hRole").textContent = CONFIG.role + " application";
+document.getElementById("bRole").textContent = CONFIG.role;
+
+var state = {step:0, email:"", text:"", sigDrawn:false, sigImage:""};
 
 function tg(id){ document.getElementById("g"+id).classList.toggle("show"); }
 
@@ -290,24 +309,52 @@ function submitApp(){
   if(!typed){ out.textContent="Type your full name."; return; }
   if(!state.sigDrawn){ out.textContent="Draw your signature in the box."; return; }
   out.textContent="";
-  var id="FL-"+Date.now().toString(36).toUpperCase();
+  var id=CONFIG.idPrefix+"-"+Date.now().toString(36).toUpperCase();
   var when=new Date().toLocaleString();
   var rows=[["Application ID",id],["Submitted",when],["Account",state.email],
-    ["Name",document.getElementById("fName").value],["Role","Systems Support Technician"],
+    ["Name",document.getElementById("fName").value],["Role",CONFIG.role],
     ["Work authorized",document.getElementById("auth").value],["Needs sponsorship",document.getElementById("spon").value]];
   var box=document.getElementById("receipt"); box.innerHTML="";
   rows.forEach(function(r){ var d=document.createElement("div"); d.textContent=r[0]+": "+r[1]; box.appendChild(d); });
   state.profile={id:id, submitted:when, account:state.email,
     name:document.getElementById("fName").value, phone:document.getElementById("fPhone").value,
     email:document.getElementById("fEmail").value, city:document.getElementById("fCity").value,
-    state:document.getElementById("fState").value, company:document.getElementById("fCompany").value,
+    state:document.getElementById("fState").value, previousCompany:document.getElementById("fCompany").value,
     title:document.getElementById("fTitle").value, skills:document.getElementById("fSkills").value,
     workAuthorized:document.getElementById("auth").value, needsSponsorship:document.getElementById("spon").value,
-    role:"Systems Support Technician", photo:""};
+    company:CONFIG.company, role:CONFIG.role, typedSignature:typed, signature:sig.toDataURL("image/png"), photo:""};
   document.getElementById("bName").textContent=state.profile.name||typed;
   document.getElementById("bId").textContent=id;
   saveProfile();
+  renderFull();
   go(5);
+}
+
+var LABELS=[["id","Application ID"],["submitted","Submitted"],["company","Company"],["role","Role"],["account","Account email"],
+  ["name","Full name"],["phone","Phone"],["email","Resume email"],["city","City"],["state","State"],
+  ["previousCompany","Most recent company"],["title","Most recent title"],["skills","Skills and tools"],
+  ["workAuthorized","Work authorized"],["needsSponsorship","Needs sponsorship"],["typedSignature","Typed signature"]];
+
+function renderFull(){
+  var p=state.profile, kv=document.getElementById("fullKv"); kv.innerHTML="";
+  LABELS.forEach(function(l){
+    var k=document.createElement("div"); k.className="k"; k.textContent=l[1];
+    var v=document.createElement("div"); v.className="v"; v.textContent=p[l[0]]||"Not provided";
+    kv.appendChild(k); kv.appendChild(v);
+  });
+  var k=document.createElement("div"); k.className="k"; k.textContent="Drawn signature";
+  var v=document.createElement("div"); v.className="v";
+  var si=document.createElement("img"); si.src=p.signature; si.alt="Signature"; si.style.cssText="width:100%;max-width:280px;height:auto;border:1px solid var(--line);border-radius:6px;object-fit:contain";
+  v.appendChild(si); kv.appendChild(k); kv.appendChild(v);
+  var fp=document.getElementById("fullPhoto"); fp.innerHTML="";
+  if(p.photo){ var im=document.createElement("img"); im.src=p.photo; im.alt="Badge photo"; fp.appendChild(im); }
+}
+
+function downloadProfile(){
+  var blob=new Blob([JSON.stringify(state.profile,null,2)],{type:"application/json"});
+  var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download=state.profile.id+"-profile.json"; document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
 }
 
 function saveProfile(){
@@ -332,6 +379,7 @@ document.getElementById("photo").addEventListener("change",function(){
     document.getElementById("bPh").style.display="none";
     state.profile.photo=data;
     saveProfile();
+    renderFull();
   };
   img.onerror=function(){ URL.revokeObjectURL(url); out.textContent="That image could not be opened. Try a JPG or PNG photo."; };
   img.src=url;
