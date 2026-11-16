@@ -1,6 +1,6 @@
 Hire Portal changelog
 
-2026-11-16, v2026.11.16. Fixed the company name to Mohave Technology Group. The portal is now a Pajamastan portal, with a blue Republic of Pajamastan link at the top that goes back to the Pajamastan site.
+2026-11-16, v2026.11.16. Fixed the spelling of the company name. The portal is now a Pajamastan portal, with a blue Republic of Pajamastan link at the top that goes back to the Pajamastan site.
 
 2026-11-07, v2026.11.07. Added a headshot upload for the badge, saved with the profile. Added a company template with a complete profile view that can be downloaded.
 
